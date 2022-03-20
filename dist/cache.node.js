@@ -5068,10 +5068,6 @@ var RedisDefaultStore = /*#__PURE__*/function () {
     this.client = client;
     this.prefix = options.prefix || 'axios-cache';
     this.maxScanCount = options.maxScanCount || 1000;
-    this.getAsync = client.get || client.GET;
-    this.psetexAsync = client.pSetEx || client.PSETEX;
-    this.delAsync = client.del || client.DEL;
-    this.scanAsync = client.scan || client.SCAN;
   }
 
   _createClass(RedisDefaultStore, [{
@@ -5101,7 +5097,7 @@ var RedisDefaultStore = /*#__PURE__*/function () {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return this.getAsync(this.transformKey(key));
+                return this.client.GET(this.transformKey(key));
 
               case 2:
                 _context.t0 = _context.sent;
@@ -5149,7 +5145,7 @@ var RedisDefaultStore = /*#__PURE__*/function () {
                 }
 
                 _context2.next = 5;
-                return this.psetexAsync(computedKey, ttl, JSON.stringify(value));
+                return this.client.PSETEX(computedKey, ttl, JSON.stringify(value));
 
               case 5:
                 return _context2.abrupt("return", value);
@@ -5177,7 +5173,7 @@ var RedisDefaultStore = /*#__PURE__*/function () {
             switch (_context3.prev = _context3.next) {
               case 0:
                 _context3.next = 2;
-                return this.delAsync(this.transformKey(key));
+                return this.client.DEL(this.transformKey(key));
 
               case 2:
               case "end":
@@ -5206,7 +5202,7 @@ var RedisDefaultStore = /*#__PURE__*/function () {
 
               case 1:
                 _context4.next = 3;
-                return this.scanAsync(cursor, 'MATCH', this.transformKey('*'), 'COUNT', this.maxScanCount);
+                return this.client.SCAN(cursor, 'MATCH', this.transformKey('*'), 'COUNT', this.maxScanCount);
 
               case 3:
                 reply = _context4.sent;
@@ -5246,7 +5242,7 @@ var RedisDefaultStore = /*#__PURE__*/function () {
               case 0:
                 _context5.next = 2;
                 return this.scan(function (keys) {
-                  return _this.delAsync(keys);
+                  return _this.client.DEL(keys);
                 });
 
               case 2:
@@ -5315,7 +5311,7 @@ var RedisDefaultStore = /*#__PURE__*/function () {
                         switch (_context7.prev = _context7.next) {
                           case 0:
                             _context7.next = 2;
-                            return this.getAsync(key);
+                            return this.client.GET(key);
 
                           case 2:
                             _context7.t0 = _context7.sent;
@@ -5436,19 +5432,12 @@ var RedisStore = /*#__PURE__*/function () {
       }
     } catch (err) {
       if ((typeof process === "undefined" ? "undefined" : _typeof(process)) && process.env.env === 'development') {
-        console.warn(err);
+        console.debug(err);
       }
     }
 
     this.client = client;
-    this.HASH_KEY = HASH_KEY; // for node-redis, OR statements are for other clients like ioRedis, feel free to try them
-
-    this.hgetAsync = client.hGet || client.HGET;
-    this.hsetAsync = client.hSet || client.HSET;
-    this.hdelAsync = client.hDel || client.HDEL;
-    this.delAsync = client.del || client.DEL;
-    this.hlenAsync = client.hLen || client.HLEN;
-    this.hgetallAsync = hGetAll || client.HGETALL;
+    this.HASH_KEY = HASH_KEY;
   }
 
   _createClass(RedisStore, [{
@@ -5461,7 +5450,7 @@ var RedisStore = /*#__PURE__*/function () {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return this.hgetAsync(this.HASH_KEY, key);
+                return this.client.HGET(this.HASH_KEY, key);
 
               case 2:
                 _context.t0 = _context.sent;
@@ -5500,7 +5489,7 @@ var RedisStore = /*#__PURE__*/function () {
             switch (_context2.prev = _context2.next) {
               case 0:
                 _context2.next = 2;
-                return this.hsetAsync(this.HASH_KEY, key, JSON.stringify(value));
+                return this.client.HSET(this.HASH_KEY, key, JSON.stringify(value));
 
               case 2:
                 return _context2.abrupt("return", value);
@@ -5528,7 +5517,7 @@ var RedisStore = /*#__PURE__*/function () {
             switch (_context3.prev = _context3.next) {
               case 0:
                 _context3.next = 2;
-                return this.hdelAsync(this.HASH_KEY, key);
+                return this.client.HDEL(this.HASH_KEY, key);
 
               case 2:
               case "end":
@@ -5553,9 +5542,12 @@ var RedisStore = /*#__PURE__*/function () {
             switch (_context4.prev = _context4.next) {
               case 0:
                 _context4.next = 2;
-                return this.delAsync(this.HASH_KEY);
+                return this.client.DEL(this.HASH_KEY);
 
               case 2:
+                return _context4.abrupt("return", _context4.sent);
+
+              case 3:
               case "end":
                 return _context4.stop();
             }
@@ -5577,9 +5569,13 @@ var RedisStore = /*#__PURE__*/function () {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
-                return _context5.abrupt("return", this.hlenAsync(this.HASH_KEY));
+                _context5.next = 2;
+                return this.client.HLEN(this.HASH_KEY);
 
-              case 1:
+              case 2:
+                return _context5.abrupt("return", _context5.sent);
+
+              case 3:
               case "end":
                 return _context5.stop();
             }
@@ -5603,7 +5599,7 @@ var RedisStore = /*#__PURE__*/function () {
             switch (_context6.prev = _context6.next) {
               case 0:
                 _context6.next = 2;
-                return this.hgetallAsync(this.HASH_KEY);
+                return this.client.HGETALL(this.HASH_KEY);
 
               case 2:
                 hashData = _context6.sent;

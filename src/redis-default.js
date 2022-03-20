@@ -17,10 +17,6 @@ class RedisDefaultStore {
     this.client = client
     this.prefix = options.prefix || 'axios-cache'
     this.maxScanCount = options.maxScanCount || 1000
-    this.getAsync = client.get || client.GET
-    this.psetexAsync = client.pSetEx || client.PSETEX
-    this.delAsync = client.del || client.DEL
-    this.scanAsync = client.scan || client.SCAN
   }
 
   calculateTTL (value) {
@@ -40,7 +36,7 @@ class RedisDefaultStore {
   }
 
   async getItem (key) {
-    const item = (await this.getAsync(this.transformKey(key))) || null
+    const item = (await this.client.GET(this.transformKey(key))) || null
 
     return JSON.parse(item)
   }
@@ -51,21 +47,21 @@ class RedisDefaultStore {
     const ttl = this.calculateTTL(value)
 
     if (ttl > 0) {
-      await this.psetexAsync(computedKey, ttl, JSON.stringify(value))
+      await this.client.PSETEX(computedKey, ttl, JSON.stringify(value))
     }
 
     return value
   }
 
   async removeItem (key) {
-    await this.delAsync(this.transformKey(key))
+    await this.client.DEL(this.transformKey(key))
   }
 
   async scan (operation) {
     let cursor = '0'
 
     do {
-      const reply = await this.scanAsync(cursor, 'MATCH', this.transformKey('*'), 'COUNT', this.maxScanCount)
+      const reply = await this.client.SCAN(cursor, 'MATCH', this.transformKey('*'), 'COUNT', this.maxScanCount)
 
       cursor = reply[0]
 
@@ -74,7 +70,7 @@ class RedisDefaultStore {
   }
 
   async clear () {
-    await this.scan(keys => this.delAsync(keys))
+    await this.scan(keys => this.client.DEL(keys))
   }
 
   async length () {
@@ -89,7 +85,7 @@ class RedisDefaultStore {
 
   async iterate (fn) {
     async function runFunction (key) {
-      const item = (await this.getAsync(key)) || null
+      const item = (await this.client.GET(key)) || null
 
       const value = JSON.parse(item)
 

@@ -6,7 +6,7 @@ import { AxiosInstance, AxiosRequestConfig, AxiosAdapter } from 'axios';
 
 declare module 'axios'
 {
-	interface AxiosRequestConfig
+	interface AxiosRequestConfig<D = any>
 	{
 		/**
 		 * configure how the cached requests will be handled, where they will be stored, etc.
