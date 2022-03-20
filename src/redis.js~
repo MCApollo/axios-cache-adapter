@@ -25,7 +25,7 @@ class RedisStore {
     this.hdelAsync = client.hDel || client.HDEL
     this.delAsync = client.del || client.DEL
     this.hlenAsync = client.hLen || client.HLEN
-    this.hgetallAsync = client.hGetAll || client.HGETALL
+    this.hgetallAsync = hGetAll || client.HGETALL
   }
 
   async getItem (key) {

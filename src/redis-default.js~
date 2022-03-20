@@ -10,7 +10,7 @@ class RedisDefaultStore {
       }
     } catch (err) {
       if (typeof process && process.env.env === 'development') {
-        console.warn(err)
+        console.warn(err);
       }
     }
 
