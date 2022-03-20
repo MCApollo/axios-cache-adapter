@@ -1,25 +1,26 @@
-import { promisify } from 'util'
-
 class RedisDefaultStore {
   constructor (client, options = {}) {
     const invalidClientError = new TypeError(
-      'First parameter must be a valid RedisClient instance.'
+      'WARN: First parameter must be a valid RedisClient instance.'
     )
 
     try {
-      if (client.constructor.name !== 'RedisClient') {
+      if (!(client.constructor.name === 'RedisClient' || client.constructor.name === 'Commander')) {
         throw invalidClientError
       }
     } catch (err) {
-      throw invalidClientError
+      if (typeof process && process.env.env === 'development') {
+        console.warn(err);
+      }
     }
+
     this.client = client
     this.prefix = options.prefix || 'axios-cache'
     this.maxScanCount = options.maxScanCount || 1000
-    this.getAsync = promisify(client.get).bind(client)
-    this.psetexAsync = promisify(client.psetex).bind(client)
-    this.delAsync = promisify(client.del).bind(client)
-    this.scanAsync = promisify(client.scan).bind(client)
+    this.getAsync = client.get || client.GET
+    this.psetexAsync = client.pSetEx || client.PSETEX
+    this.delAsync = client.del || client.DEL
+    this.scanAsync = client.scan || client.SCAN
   }
 
   calculateTTL (value) {

@@ -1,28 +1,31 @@
-import { promisify } from 'util'
-
 import { mapObject } from './utilities'
 
 class RedisStore {
   constructor (client, HASH_KEY = 'axios-cache') {
     const invalidClientError = new TypeError(
-      'First parameter must be a valid RedisClient instance.'
+      'WARN: First parameter must be a valid RedisClient instance.'
     )
 
     try {
-      if (client.constructor.name !== 'RedisClient') {
+      if (!(client.constructor.name === 'RedisClient' || client.constructor.name === 'Commander')) {
         throw invalidClientError
       }
     } catch (err) {
-      throw invalidClientError
+      if (typeof process && process.env.env === 'development') {
+        console.warn(err);
+      }
     }
+
     this.client = client
     this.HASH_KEY = HASH_KEY
-    this.hgetAsync = promisify(client.hget).bind(client)
-    this.hsetAsync = promisify(client.hset).bind(client)
-    this.hdelAsync = promisify(client.hdel).bind(client)
-    this.delAsync = promisify(client.del).bind(client)
-    this.hlenAsync = promisify(client.hlen).bind(client)
-    this.hgetallAsync = promisify(client.hgetall).bind(client)
+
+    // for node-redis, OR statements are for other clients like ioRedis, feel free to try them
+    this.hgetAsync = client.hGet || client.HGET
+    this.hsetAsync = client.hSet || client.HSET
+    this.hdelAsync = client.hDel || client.HDEL
+    this.delAsync = client.del || client.DEL
+    this.hlenAsync = client.hLen || client.HLEN
+    this.hgetallAsync = hGetAll || client.HGETALL
   }
 
   async getItem (key) {
